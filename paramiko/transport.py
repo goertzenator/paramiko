@@ -197,8 +197,8 @@ class Transport (threading.Thread):
     across a single session (and often are, in the case of port forwardings).
     """
 
-    _PROTO_ID = '2.0'
-    _CLIENT_ID = 'paramiko_1.7.6'
+    _PROTO_ID = b'2.0'
+    _CLIENT_ID = b'paramiko_1.7.6'
 
     _preferred_ciphers = ( 'aes128-ctr', 'aes256-ctr', 'aes128-cbc', 'blowfish-cbc', 'aes256-cbc', '3des-cbc',
         'arcfour128', 'arcfour256' )
@@ -310,9 +310,9 @@ class Transport (threading.Thread):
 
         # negotiated crypto parameters
         self.packetizer = Packetizer(sock)
-        self.local_version = 'SSH-' + self._PROTO_ID + '-' + self._CLIENT_ID
-        self.remote_version = ''
-        self.local_cipher = self.remote_cipher = ''
+        self.local_version = b'SSH-' + self._PROTO_ID + b'-' + self._CLIENT_ID
+        self.remote_version = b''
+        self.local_cipher = self.remote_cipher = b''
         self.local_kex_init = self.remote_kex_init = None
         self.local_mac = self.remote_mac = None
         self.local_compression = self.remote_compression = None
@@ -1423,7 +1423,7 @@ class Transport (threading.Thread):
                 break
             self.clear_to_send_lock.release()
             if time.time() > start + self.clear_to_send_timeout:
-              raise SSHException('Key-exchange timed out waiting for key negotiation')
+                raise SSHException('Key-exchange timed out waiting for key negotiation')
         try:
             self._send_message(data)
         finally:
@@ -1515,7 +1515,7 @@ class Transport (threading.Thread):
         else:
             self._log(DEBUG, 'starting thread (client mode): %s' % hex(int(id(self)) & 0xffffffff))
         try:
-            self.packetizer.write_all(self.local_version + '\r\n')
+            self.packetizer.write_all(self.local_version + b'\r\n')
             self._check_banner()
             self._send_kex_init()
             self._expect_packet(MSG_KEXINIT)
