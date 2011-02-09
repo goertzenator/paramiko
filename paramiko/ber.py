@@ -98,20 +98,20 @@ class BER(object):
 
     def encode_tlv(self, ident, val):
         # no need to support ident > 31 here
-        self.content += chr(ident)
+        self.content += bytes((ident,))
         if len(val) > 0x7f:
             lenstr = util.deflate_long(len(val))
-            self.content += chr(0x80 + len(lenstr)) + lenstr
+            self.content += bytes((0x80 + len(lenstr)),) + lenstr
         else:
-            self.content += chr(len(val))
+            self.content += bytes((len(val),))
         self.content += val
 
     def encode(self, x):
         if isinstance(x, bool):
             if x:
-                self.encode_tlv(1, '\xff')
+                self.encode_tlv(1, b'\xff')
             else:
-                self.encode_tlv(1, '\x00')
+                self.encode_tlv(1, b'\x00')
         elif isinstance(x, int):
             self.encode_tlv(2, util.deflate_long(x))
         elif isinstance(x, str):

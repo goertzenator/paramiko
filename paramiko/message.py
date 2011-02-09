@@ -138,7 +138,7 @@ class Message (object):
         @rtype: bool
         """
         b = self.get_bytes(1)
-        return b != '\x00'
+        return b != b'\x00'
 
     def get_int(self):
         """
@@ -193,7 +193,7 @@ class Message (object):
         Write bytes to the stream, without any formatting.
         
         @param b: bytes to add
-        @type b: str
+        @type b: bytes
         """
         self.packet.write(b)
         return self
@@ -276,7 +276,7 @@ class Message (object):
         return self
         
     def _add(self, i):
-        if type(i) is str:
+        if type(i) is bytes:
             return self.add_string(i)
         elif type(i) is int:
             return self.add_int(i)

@@ -94,7 +94,7 @@ def deflate_long(n, add_sign_padding=True):
 def format_binary_weird(data):
     out = ''
     for i in enumerate(data):
-        out += '%02X' % ord(i[1])
+        out += '%02X' % i[1]
         if i[0] % 2:
             out += ' '
         if i[0] % 16 == 15:
@@ -112,8 +112,8 @@ def format_binary(data, prefix=''):
     return [prefix + x for x in out]
 
 def format_binary_line(data):
-    left = ' '.join(['%02X' % ord(c) for c in data])
-    right = ''.join([('.%c..' % c)[(ord(c)+63)//95] for c in data])
+    left = ' '.join(['%02X' % c for c in data])
+    right = ''.join([('.%c..' % c)[(c+63)//95] for c in data])
     return '%-50s %s' % (left, right)
 
 def hexify(s):
@@ -288,8 +288,8 @@ class Counter (object):
         """Increament the counter and return the new value"""
         i = self.blocksize - 1
         while i > -1:
-            c = self.value[i] = chr((ord(self.value[i]) + 1) % 256)
-            if c != '\x00':
+            c = self.value[i] = bytes(((self.value[i] + 1) % 256,))
+            if c != b'\x00':
                 return self.value.tostring()
             i -= 1
         # counter reset

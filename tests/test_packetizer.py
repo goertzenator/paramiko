@@ -35,13 +35,13 @@ class PacketizerTest (unittest.TestCase):
         p = Packetizer(wsock)
         p.set_log(util.get_logger('paramiko.transport'))
         p.set_hexdump(True)
-        cipher = AES.new('\x00' * 16, AES.MODE_CBC, '\x55' * 16)
+        cipher = AES.new(b'\x00' * 16, AES.MODE_CBC, '\x55' * 16)
         p.set_outbound_cipher(cipher, 16, SHA, 12, '\x1f' * 20)
 
         # message has to be at least 16 bytes long, so we'll have at least one
         # block of data encrypted that contains zero random padding bytes
         m = Message()
-        m.add_byte(chr(100))
+        m.add_byte(b'\x64')
         m.add_int(100)
         m.add_int(1)
         m.add_int(900)

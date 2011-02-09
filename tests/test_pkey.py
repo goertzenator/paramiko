@@ -155,7 +155,7 @@ class KeyTest (unittest.TestCase):
         self.assert_(type(msg) is Message)
         msg.rewind()
         self.assertEquals('ssh-rsa', msg.get_string())
-        sig = ''.join([chr(int(x, 16)) for x in SIGNED_RSA.split(':')])
+        sig = b''.join([bytes((int(x, 16),)) for x in SIGNED_RSA.split(':')])
         self.assertEquals(sig, msg.get_string())
         msg.rewind()
         pub = RSAKey(data=str(key))

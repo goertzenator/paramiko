@@ -56,7 +56,7 @@ class KexGroup1(object):
         # compute e = g^x mod p (where g=2), and send it
         self.e = pow(G, self.x, P)
         m = Message()
-        m.add_byte(chr(_MSG_KEXDH_INIT))
+        m.add_byte(_MSG_KEXDH_INIT)
         m.add_mpint(self.e)
         self.transport._send_message(m)
         self.transport._expect_packet(_MSG_KEXDH_REPLY)
@@ -81,9 +81,9 @@ class KexGroup1(object):
         while 1:
             self.transport.randpool.stir()
             x_bytes = self.transport.randpool.get_bytes(128)
-            x_bytes = chr(ord(x_bytes[0]) & 0x7f) + x_bytes[1:]
-            if (x_bytes[:8] != '\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF') and \
-                   (x_bytes[:8] != '\x00\x00\x00\x00\x00\x00\x00\x00'):
+            x_bytes = bytes((x_bytes[0] & 0x7f,)) + x_bytes[1:]
+            if (x_bytes[:8] != b'\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF') and \
+                   (x_bytes[:8] != b'\x00\x00\x00\x00\x00\x00\x00\x00'):
                 break
         self.x = util.inflate_long(x_bytes)
 
@@ -103,7 +103,7 @@ class KexGroup1(object):
         hm.add_mpint(self.e)
         hm.add_mpint(self.f)
         hm.add_mpint(K)
-        self.transport._set_K_H(K, SHA.new(str(hm)).digest())
+        self.transport._set_K_H(K, SHA.new(hm.bytes()).digest())
         self.transport._verify_key(host_key, sig)
         self.transport._activate_outbound()
 
@@ -113,7 +113,7 @@ class KexGroup1(object):
         if (self.e < 1) or (self.e > P - 1):
             raise SSHException('Client kex "e" is out of range')
         K = pow(self.e, self.x, P)
-        key = str(self.transport.get_server_key())
+        key = self.transport.get_server_key().bytes()
         # okay, build up the hash H of (V_C || V_S || I_C || I_S || K_S || e || f || K)
         hm = Message()
         hm.add(self.transport.remote_version, self.transport.local_version,
@@ -122,15 +122,15 @@ class KexGroup1(object):
         hm.add_mpint(self.e)
         hm.add_mpint(self.f)
         hm.add_mpint(K)
-        H = SHA.new(str(hm)).digest()
+        H = SHA.new(hm.bytes()).digest()
         self.transport._set_K_H(K, H)
         # sign it
         sig = self.transport.get_server_key().sign_ssh_data(self.transport.randpool, H)
         # send reply
         m = Message()
-        m.add_byte(chr(_MSG_KEXDH_REPLY))
+        m.add_byte(_MSG_KEXDH_REPLY)
         m.add_string(key)
         m.add_mpint(self.f)
-        m.add_string(str(sig))
+        m.add_string(sig.bytes())
         self.transport._send_message(m)
         self.transport._activate_outbound()

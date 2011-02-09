@@ -166,7 +166,7 @@ class BaseSFTP (object):
 
     def _send_packet(self, t, packet):
         #self._log(DEBUG2, 'write: %s (len=%d)' % (CMD_NAMES.get(t, '0x%02x' % t), len(packet)))
-        out = struct.pack('>I', len(packet) + 1) + chr(t) + packet
+        out = struct.pack('>I', len(packet) + 1) + bytes((t,)) + packet
         if self.ultra_debug:
             self._log(DEBUG, util.format_binary(out, 'OUT: '))
         self._write_all(out)
@@ -182,7 +182,7 @@ class BaseSFTP (object):
         if self.ultra_debug:
             self._log(DEBUG, util.format_binary(data, 'IN: '));
         if size > 0:
-            t = ord(data[0])
+            t = data[0]
             #self._log(DEBUG2, 'read: %s (len=%d)' % (CMD_NAMES.get(t), '0x%02x' % t, len(data)-1))
             return t, data[1:]
         return 0, ''
