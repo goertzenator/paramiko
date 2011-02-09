@@ -46,16 +46,21 @@ class Message (object):
         @type content: string
         """
         if content != None:
-            self.packet = io.StringIO(content)
+            self.packet = io.BytesIO(content)
         else:
-            self.packet = io.StringIO()
+            self.packet = io.BytesIO()
 
+    # This is to catch any stray calls to __str__ during porting to py3k
+    # Remove once porting has been completed.
     def __str__(self):
+        raise Exception("Did you mean to call the bytes() method?")
+
+    def bytes(self):
         """
-        Return the byte stream content of this Message, as a string.
+        Return the byte stream content of this Message, as bytes.
 
         @return: the contents of this Message.
-        @rtype: string
+        @rtype: bytes
         """
         return self.packet.getvalue()
 
@@ -181,7 +186,7 @@ class Message (object):
         @return: a list of strings.
         @rtype: list of strings
         """
-        return self.get_string().split(',')
+        return self.get_string().split(b',')
 
     def add_bytes(self, b):
         """
@@ -198,9 +203,9 @@ class Message (object):
         Write a single byte to the stream, without any formatting.
         
         @param b: byte to add
-        @type b: str
+        @type b: int
         """
-        self.packet.write(b)
+        self.packet.write(bytes((b,)))
         return self
 
     def add_boolean(self, b):
@@ -211,9 +216,9 @@ class Message (object):
         @type b: bool
         """
         if b:
-            self.add_byte('\x01')
+            self.add_byte(1)
         else:
-            self.add_byte('\x00')
+            self.add_byte(0)
         return self
             
     def add_int(self, n):
@@ -267,7 +272,7 @@ class Message (object):
         @param l: list of strings to add
         @type l: list(str)
         """
-        self.add_string(','.join(l))
+        self.add_string(b','.join(l))
         return self
         
     def _add(self, i):

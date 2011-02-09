@@ -67,7 +67,7 @@ class Packetizer (object):
         self.__dump_packets = False
         self.__need_rekey = False
         self.__init_count = 0
-        self.__remainder = ''
+        self.__remainder = b''
 
         # used for noticing when to re-key:
         self.__sent_bytes = 0
@@ -85,8 +85,8 @@ class Packetizer (object):
         self.__block_engine_in = None
         self.__mac_engine_out = None
         self.__mac_engine_in = None
-        self.__mac_key_out = ''
-        self.__mac_key_in = ''
+        self.__mac_key_out = b''
+        self.__mac_key_in = b''
         self.__compress_engine_out = None
         self.__compress_engine_in = None
         self.__sequence_number_out = 0
@@ -194,7 +194,7 @@ class Packetizer (object):
         @raise EOFError: if the socket was closed before all the bytes could
             be read
         """
-        out = ''
+        out = b''
         # handle over-reading from reading the banner line
         if len(self.__remainder) > 0:
             out = self.__remainder[:n]
@@ -269,12 +269,12 @@ class Packetizer (object):
         line, so it's okay to attempt large reads.
         """
         buf = self.__remainder
-        while not '\n' in buf:
+        while not b'\n' in buf:
             buf += self._read_timeout(timeout)
-        n = buf.index('\n')
+        n = buf.index(b'\n')
         self.__remainder = buf[n+1:]
         buf = buf[:n]
-        if (len(buf) > 0) and (buf[-1] == '\r'):
+        if (len(buf) > 0) and (buf[-1] == b'\r'):
             buf = buf[:-1]
         return buf
 
@@ -283,8 +283,8 @@ class Packetizer (object):
         Write a block of data using the current cipher, as an SSH block.
         """
         # encrypt this sucka
-        data = str(data)
-        cmd = ord(data[0])
+        data = data.bytes()
+        cmd = data[0]
         if cmd in MSG_NAMES:
             cmd_name = MSG_NAMES[cmd]
         else:
@@ -357,7 +357,7 @@ class Packetizer (object):
             my_mac = compute_hmac(self.__mac_key_in, mac_payload, self.__mac_engine_in)[:self.__mac_size_in]
             if my_mac != mac:
                 raise SSHException('Mismatched MAC')
-        padding = ord(packet[0])
+        padding = packet[0]
         payload = packet[1:packet_size - padding]
         randpool.add_event()
         if self.__dump_packets:
@@ -387,7 +387,7 @@ class Packetizer (object):
             self.__received_packets_overflow = 0
             self._trigger_rekey()
 
-        cmd = ord(payload[0])
+        cmd = payload[0]
         if cmd in MSG_NAMES:
             cmd_name = MSG_NAMES[cmd]
         else:
@@ -480,7 +480,7 @@ class Packetizer (object):
         else:
             # cute trick i caught openssh doing: if we're not encrypting,
             # don't waste random bytes for the padding
-            packet += (chr(0) * padding)
+            packet += bytes(padding)
         return packet
 
     def _trigger_rekey(self):

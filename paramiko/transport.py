@@ -22,7 +22,6 @@ L{Transport} handles the core SSH2 protocol.
 
 import os
 import socket
-import string
 import struct
 import sys
 import threading
@@ -200,29 +199,29 @@ class Transport (threading.Thread):
     _PROTO_ID = b'2.0'
     _CLIENT_ID = b'paramiko_1.7.6'
 
-    _preferred_ciphers = ( 'aes128-ctr', 'aes256-ctr', 'aes128-cbc', 'blowfish-cbc', 'aes256-cbc', '3des-cbc',
-        'arcfour128', 'arcfour256' )
-    _preferred_macs = ( 'hmac-sha1', 'hmac-md5', 'hmac-sha1-96', 'hmac-md5-96' )
-    _preferred_keys = ( 'ssh-rsa', 'ssh-dss' )
-    _preferred_kex = ( 'diffie-hellman-group1-sha1', 'diffie-hellman-group-exchange-sha1' )
-    _preferred_compression = ( 'none', )
+    _preferred_ciphers = ( b'aes128-ctr', b'aes256-ctr', b'aes128-cbc', b'blowfish-cbc', b'aes256-cbc', b'3des-cbc',
+        b'arcfour128', b'arcfour256' )
+    _preferred_macs = ( b'hmac-sha1', b'hmac-md5', b'hmac-sha1-96', b'hmac-md5-96' )
+    _preferred_keys = ( b'ssh-rsa', b'ssh-dss' )
+    _preferred_kex = ( b'diffie-hellman-group1-sha1', b'diffie-hellman-group-exchange-sha1' )
+    _preferred_compression = ( b'none', )
 
     _cipher_info = {
-        'aes128-ctr': { 'class': AES, 'mode': AES.MODE_CTR, 'block-size': 16, 'key-size': 16 },
-        'aes256-ctr': { 'class': AES, 'mode': AES.MODE_CTR, 'block-size': 16, 'key-size': 32 },
-        'blowfish-cbc': { 'class': Blowfish, 'mode': Blowfish.MODE_CBC, 'block-size': 8, 'key-size': 16 },
-        'aes128-cbc': { 'class': AES, 'mode': AES.MODE_CBC, 'block-size': 16, 'key-size': 16 },
-        'aes256-cbc': { 'class': AES, 'mode': AES.MODE_CBC, 'block-size': 16, 'key-size': 32 },
-        '3des-cbc': { 'class': DES3, 'mode': DES3.MODE_CBC, 'block-size': 8, 'key-size': 24 },
-        'arcfour128': { 'class': ARC4, 'mode': None, 'block-size': 8, 'key-size': 16 },
-        'arcfour256': { 'class': ARC4, 'mode': None, 'block-size': 8, 'key-size': 32 },
+        b'aes128-ctr': { 'class': AES, 'mode': AES.MODE_CTR, 'block-size': 16, 'key-size': 16 },
+        b'aes256-ctr': { 'class': AES, 'mode': AES.MODE_CTR, 'block-size': 16, 'key-size': 32 },
+        b'blowfish-cbc': { 'class': Blowfish, 'mode': Blowfish.MODE_CBC, 'block-size': 8, 'key-size': 16 },
+        b'aes128-cbc': { 'class': AES, 'mode': AES.MODE_CBC, 'block-size': 16, 'key-size': 16 },
+        b'aes256-cbc': { 'class': AES, 'mode': AES.MODE_CBC, 'block-size': 16, 'key-size': 32 },
+        b'3des-cbc': { 'class': DES3, 'mode': DES3.MODE_CBC, 'block-size': 8, 'key-size': 24 },
+        b'arcfour128': { 'class': ARC4, 'mode': None, 'block-size': 8, 'key-size': 16 },
+        b'arcfour256': { 'class': ARC4, 'mode': None, 'block-size': 8, 'key-size': 32 },
         }
 
     _mac_info = {
-        'hmac-sha1': { 'class': SHA, 'size': 20 },
-        'hmac-sha1-96': { 'class': SHA, 'size': 12 },
-        'hmac-md5': { 'class': MD5, 'size': 16 },
-        'hmac-md5-96': { 'class': MD5, 'size': 12 },
+        b'hmac-sha1': { 'class': SHA, 'size': 20 },
+        b'hmac-sha1-96': { 'class': SHA, 'size': 12 },
+        b'hmac-md5': { 'class': MD5, 'size': 16 },
+        b'hmac-md5-96': { 'class': MD5, 'size': 12 },
         }
 
     _key_info = {
@@ -231,17 +230,17 @@ class Transport (threading.Thread):
         }
 
     _kex_info = {
-        'diffie-hellman-group1-sha1': KexGroup1,
-        'diffie-hellman-group-exchange-sha1': KexGex,
+        b'diffie-hellman-group1-sha1': KexGroup1,
+        b'diffie-hellman-group-exchange-sha1': KexGex,
         }
 
     _compression_info = {
         # zlib@openssh.com is just zlib, but only turned on after a successful
         # authentication.  openssh servers may only offer this type because
         # they've had troubles with security holes in zlib in the past.
-        'zlib@openssh.com': ( ZlibCompressor, ZlibDecompressor ),
-        'zlib': ( ZlibCompressor, ZlibDecompressor ),
-        'none': ( None, None ),
+        b'zlib@openssh.com': ( ZlibCompressor, ZlibDecompressor ),
+        b'zlib': ( ZlibCompressor, ZlibDecompressor ),
+        b'none': ( None, None ),
     }
 
 
@@ -1634,28 +1633,28 @@ class Transport (threading.Thread):
                 buf = self.packetizer.readline(timeout)
             except Exception as x:
                 raise SSHException('Error reading SSH protocol banner' + str(x))
-            if buf[:4] == 'SSH-':
+            if buf[:4] == b'SSH-':
                 break
-            self._log(DEBUG, 'Banner: ' + buf)
-        if buf[:4] != 'SSH-':
-            raise SSHException('Indecipherable protocol version "' + buf + '"')
+            self._log(DEBUG, 'Banner: ' + buf.decode('ascii'))
+        if buf[:4] != b'SSH-':
+            raise SSHException('Indecipherable protocol version "' + buf.decode('ascii') + '"')
         # save this server version string for later
         self.remote_version = buf
         # pull off any attached comment
-        comment = ''
-        i = string.find(buf, ' ')
+        comment = b''
+        i = buf.find(b' ')
         if i >= 0:
             comment = buf[i+1:]
             buf = buf[:i]
         # parse out version string and make sure it matches
-        segs = buf.split('-', 2)
+        segs = buf.split(b'-', 2)
         if len(segs) < 3:
             raise SSHException('Invalid SSH banner')
         version = segs[1]
         client = segs[2]
-        if version != '1.99' and version != '2.0':
-            raise SSHException('Incompatible version (%s instead of 2.0)' % (version,))
-        self._log(INFO, 'Connected (version %s, client %s)' % (version, client))
+        if version != b'1.99' and version != b'2.0':
+            raise SSHException('Incompatible version (%s instead of 2.0)' % (version.decode('ascii'),))
+        self._log(INFO, 'Connected (version %s, client %s)' % (version.decode('ascii'), client.decode('ascii')))
 
     def _send_kex_init(self):
         """
@@ -1669,10 +1668,10 @@ class Transport (threading.Thread):
             self.clear_to_send_lock.release()
         self.in_kex = True
         if self.server_mode:
-            if (self._modulus_pack is None) and ('diffie-hellman-group-exchange-sha1' in self._preferred_kex):
+            if (self._modulus_pack is None) and (b'diffie-hellman-group-exchange-sha1' in self._preferred_kex):
                 # can't do group-exchange if we don't have a pack of potential primes
                 pkex = list(self.get_security_options().kex)
-                pkex.remove('diffie-hellman-group-exchange-sha1')
+                pkex.remove(b'diffie-hellman-group-exchange-sha1')
                 self.get_security_options().kex = pkex
             available_server_keys = list(filter(list(self.server_key_dict.keys()).__contains__,
                                            self._preferred_keys))
@@ -1681,7 +1680,7 @@ class Transport (threading.Thread):
 
         randpool.stir()
         m = Message()
-        m.add_byte(chr(MSG_KEXINIT))
+        m.add_byte(MSG_KEXINIT)
         m.add_bytes(randpool.get_bytes(16))
         m.add_list(self._preferred_kex)
         m.add_list(available_server_keys)
@@ -1691,12 +1690,12 @@ class Transport (threading.Thread):
         m.add_list(self._preferred_macs)
         m.add_list(self._preferred_compression)
         m.add_list(self._preferred_compression)
-        m.add_string('')
-        m.add_string('')
+        m.add_string(b'')
+        m.add_string(b'')
         m.add_boolean(False)
         m.add_int(0)
         # save a copy for later (needed to compute a hash)
-        self.local_kex_init = str(m)
+        self.local_kex_init = m.bytes()
         self._send_message(m)
 
     def _parse_kex_init(self, m):

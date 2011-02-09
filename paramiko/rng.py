@@ -29,7 +29,7 @@ except ImportError:
 
 def _strxor(a, b):
     assert len(a) == len(b)
-    return "".join(map(lambda x, y: chr(ord(x) ^ ord(y)), a, b))
+    return bytes(( x^y for (x,y) in zip(a,b) ))
 
 ##
 ## Find a strong random entropy source, depending on the detected platform.
