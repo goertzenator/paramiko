@@ -64,9 +64,9 @@ class HostKeyEntry:
         # Decide what kind of key we're looking at and create an object
         # to hold it accordingly.
         if keytype == 'ssh-rsa':
-            key = RSAKey(data=base64.decodebytes(key))
+            key = RSAKey(data=base64.decodebytes(key.encode('ascii')))
         elif keytype == 'ssh-dss':
-            key = DSSKey(data=base64.decodebytes(key))
+            key = DSSKey(data=base64.decodebytes(key.encode('ascii')))
         else:
             return None
 

@@ -43,7 +43,7 @@ class Message (object):
 
         @param content: the byte stream to use as the Message content (passed
             in only when decomposing a Message).
-        @type content: string
+        @type content: bytes
         """
         if content != None:
             self.packet = io.BytesIO(content)
@@ -128,7 +128,7 @@ class Message (object):
             any bytes remaining.
         @rtype: string
         """
-        return self.get_bytes(1)
+        return self.get_bytes(1)[0]
 
     def get_boolean(self):
         """
@@ -278,8 +278,6 @@ class Message (object):
     def _add(self, i):
         if type(i) is bytes:
             return self.add_string(i)
-        elif type(i) is int:
-            return self.add_int(i)
         elif type(i) is int:
             if i > 0xffffffff:
                 return self.add_mpint(i)

@@ -72,15 +72,15 @@ def deflate_long(n, add_sign_padding=True):
         n = n >> 32
     # strip off leading zeros, FFs
     for i in enumerate(s):
-        if (n == 0) and (i[1] != '\000'):
+        if (n == 0) and (i[1] != 0x00):
             break
-        if (n == -1) and (i[1] != '\xff'):
+        if (n == -1) and (i[1] != 0xff):
             break
     else:
         # degenerate case, n was either 0 or -1
         i = (0,)
         if n == 0:
-            s = b'\000'
+            s = b'\x00'
         else:
             s = b'\xff'
     s = s[i[0]:]
@@ -165,8 +165,8 @@ def generate_key_bytes(hashclass, salt, key, nbytes):
     @return: key data
     @rtype: string
     """
-    keydata = ''
-    digest = ''
+    keydata = b''
+    digest = b''
     if len(salt) > 8:
         salt = salt[:8]
     while nbytes > 0:
